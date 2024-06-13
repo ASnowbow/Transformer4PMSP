@@ -2,9 +2,10 @@ import salabim as sim
 import gym
 from gym import spaces
 import numpy as np
+import os
 
 import config as cfg
-# from components import jobs, new_jobs, machs
+from components import jobs, new_jobs, machs
 
 import random
 
@@ -284,4 +285,20 @@ class EnvPMSP(gym.Env):
         return self.state
 
 
-
+if __name__ == "__main__":
+    env = EnvPMSP(init_jobs=jobs, new_jobs=new_jobs, machs=machs)
+    done = False
+    score = 0
+    matrix_file = os.path.join(cfg.experi_dir(), 'state_matrix.txt')
+    observation = env.reset()
+    # np.savetxt(matrix_file, observation)
+    while not done:
+        action = min(range(len(env.job_choose)), key=lambda i: env.job_choose[i].due_date)
+        observation_, reward, done, info = env.step(action)
+        if env.counts == cfg.num_init_job / 2:
+            np.savetxt(matrix_file, observation_)
+        score += reward
+        observation = observation_
+    print(score)
+    print(env.counts)
+    print("total_tardiness: ", env.total_tardiness)

@@ -174,7 +174,7 @@ class SelfAttention(nn.Module):
         x = self.norm1(attention + queries)
         forward = self.feed_forward(x)
         out = self.norm2(x + forward)
-        return out
+        return out, attention_a
 
 
 class ActorNetwork(nn.Module):
@@ -200,12 +200,14 @@ class ActorNetwork(nn.Module):
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         self.to(self.device)
 
-
+        # Initialize storage for attention weights
+        self.attn_weights_1 = None
+        self.attn_weights_2 = None
 
     def forward(self, state):
         # x = self.emb(state)
-        x = self.attention(state)
-        x = self.attention_2(x)
+        x, self.attn_weights_1 = self.attention(state)
+        x, self.attn_weights_2 = self.attention_2(x)
         # x = self.attention_3(x)
         prio = self.fc_out(x)
         dist = T.squeeze(prio)  # squeeze from 3-dim to 1-dim
@@ -257,12 +259,16 @@ class CriticNetwork(nn.Module):
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         self.to(self.device)
 
+        # Initialize storage for attention weights
+        self.attn_weights_1 = None
+        self.attn_weights_2 = None
+
     def forward(self, state):
 
         # x = self.emb(state)
 
-        x = self.attention(state)
-        x = self.attention_2(x)
+        x, self.attn_weights_1 = self.attention(state)
+        x, self.attn_weights_2 = self.attention_2(x)
         # x = self.attention_3(x)
 
         # x = self.mlp(state)
