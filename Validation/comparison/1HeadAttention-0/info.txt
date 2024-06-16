@@ -1,0 +1,17 @@
+Network Information
+C:\Users\Funing Li\Desktop\Transformer paper\Code\Brain_LearningRate_Decay_NoGlobal.py
+learning rate decay: 10
+number of decay: 1
+
+
+Environment Information
+Setup Reward: +=1
+Final Reward: +=100
+Just in Time Threshold: +=1
+Just in Time Reward: +=1
+
+
+HyperParameter
+Batch Size: 64
+Learning Rate: 0.0001
+Num_Epoch: 4
