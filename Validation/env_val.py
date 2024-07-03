@@ -17,14 +17,6 @@ np.random.seed(1337)
 random.seed(1337)
 sim.random.seed(1337)
 
-"""
-2 kind of Machines [Mach1, Mach2]
-Mach1 is faster, Mach2 is normal
-
-8 type of Jobs[1, 2, 3, 4, 5, 6, 7, 8]
-changing job_types needs setup time
-"""
-
 
 # one hot function
 def one_hot(a, num_type):
@@ -139,7 +131,6 @@ class Env_4_RNN(gym.Env):
         n = action
         self.job_choose[n].enter(machs[self.m].wait_line)
 
-        # 新进入wait_line的job会对该machine的accumulated time和lst job造成影响
         # if this job is the first job of this machine, an additional Setup_time is needed
         if len(machs[self.m].wait_line) == 1:
             if machs[self.m].mch_typ == 2:  # normal machine
@@ -172,7 +163,6 @@ class Env_4_RNN(gym.Env):
                 else:
                     pass
 
-        # mach中的lst_job一项也会更改
         machs[self.m].lst_job = self.job_choose[n].label
         machs[self.m].num_jobs += 1
 
@@ -198,7 +188,7 @@ class Env_4_RNN(gym.Env):
         """
         del self.job_choose[n]
         self.state = np.delete(self.state, n, 0)
-        self.job_state = self.state[:-config.NUM_Machs, :(MAX_Job_Type + 2)]  # 前5列是工件状态
+        self.job_state = self.state[:-config.NUM_Machs, :(MAX_Job_Type + 2)]
 
         """
         find the next idle machine according to the accumulated time of each machine
@@ -300,21 +290,15 @@ class Env_4_RNN(gym.Env):
         """ Merge to get the global matrix"""
         self.state = np.hstack((self.job_state, self.mach_state))
 
-        """
-        将所有机器的时间放入np数组，以便实现实时系统
-        """
         self.mach_time = np.zeros(len(machs))
         for i in range(len(machs)):
             self.mach_time[i] = machs[i].acm_time
         self.m = 0
 
-        """
-        ALL Machine State
-        """
+        """ALL Machine State"""
         self.glb_state = np.zeros(config.NUM_Machs * config.Input_Size).reshape(config.NUM_Machs, config.Input_Size)
         if config.global_info:
             for j in range(len(self.glb_state)):
-                # 后两列是machine种类
                 self.glb_state[j][-NUM_Mach_Type:] = one_hot(machs[j].mch_typ, NUM_Mach_Type)
         self.glb_state[self.m][:2+MAX_Job_Type] = 1
 
@@ -424,28 +408,6 @@ reward_file = os.path.join(figs_dir, 'reward.png')
 tardiness_file = os.path.join(figs_dir, 'tardiness.png')
 info_file = os.path.join(experiment_dir, 'info.txt')
 
-"""
-with open(info_file, "w") as file:
-    lines = [
-        "Network Information",
-        inspect.getfile(Agent),
-        "learning rate decay: " + str(config.learning_rate_decay),
-        "number of decay: " + str(config.num_decay),
-        "\n",
-        "Environment Information",
-        "Setup Reward: +=" + str(config.setup_reward),
-        "Final Reward: +=" + str(config.final_reward),
-        "Just in Time Threshold: +=" + str(config.just_in_time_threshold),
-        "Just in Time Reward: +=" + str(config.just_in_time_reward),
-        "\n",
-        "HyperParameter",
-        "Batch Size: " + str(batch_size),
-        "Learning Rate: " + str(alpha),
-        "Num_Epoch: " + str(n_epochs)
-    ]
-    file.writelines(line + "\n" for line in lines)
-"""
-
 best_score = env.reward_range[0]
 best_tardiness = -10000000
 score_history = []
@@ -473,12 +435,7 @@ for i in range(n_games):
     while not done:
         action, prob, val = agent.choose_action(observation)
         observation_, reward, done, info = env.step(action)
-        # n_steps += 1
-        # score += reward
-        # agent.remember(observation, action, prob, val, reward, done)
-        # if n_steps % N_update == 0:
-            # agent.learn()
-            # learn_iters += 1
+        # in the validation env, the agent do not need to be trained
         observation = observation_
     time = timeit.default_timer() - start
     time_list[i] = time
@@ -487,7 +444,7 @@ for i in range(n_games):
 
     # score_history.append(score)
     tardiness_history.append(env.total_tardiness)
-    # avg_score = np.mean(score_history[-100:])  # 平均分数
+    # avg_score = np.mean(score_history[-100:])
     avg_tardiness = np.mean(tardiness_history[-100:])
     print('total_tardiness', env.total_tardiness, 'num_tardy_jobs', env.late_count)
 

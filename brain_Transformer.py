@@ -302,7 +302,7 @@ class Agent:
         print(self.actor.device)
         self.memory = PPOMemory(batch_size)
 
-        # 优化器实例化
+        # optimizer instantiation
         self.optimizer_actor = T.optim.Adam(self.actor.parameters(), lr=self.lr)
         self.optimizer_critic = T.optim.Adam(self.critic.parameters(), lr=self.lr)
 
