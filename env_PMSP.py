@@ -20,9 +20,6 @@ Mach1 is faster, Mach2 is normal
 
 8 type of Jobs[1, 2, 3, 4, 5, 6, 7, 8]
 changing job_types needs setup time
-
-100 jobs with 4 Release Time
-dispatching rule
 """
 
 
@@ -96,7 +93,6 @@ class EnvPMSP(gym.Env):
         n = action
         self.job_choose[n].enter(self.machs[self.m].wait_line)
 
-        # 新进入wait_line的job会对该machine的accumulated time和lst job造成影响
         # if this job is the first job of this machine, an additional Setup_time is needed
         if len(self.machs[self.m].wait_line) == 1:
             if self.machs[self.m].mch_typ == 2:  # normal machine
@@ -129,7 +125,7 @@ class EnvPMSP(gym.Env):
                 else:
                     pass
 
-        # mach中的lst_job一项也会更改
+        # attribute lst_job in machine will change
         self.machs[self.m].lst_job = self.job_choose[n].label
         self.machs[self.m].num_jobs += 1
 
@@ -155,7 +151,7 @@ class EnvPMSP(gym.Env):
         """
         del self.job_choose[n]
         self.state = np.delete(self.state, n, 0)
-        self.job_state = self.state[:-cfg.num_all_machine, :(cfg.max_job_family + 2)]  # 前5列是工件状态
+        self.job_state = self.state[:-cfg.num_all_machine, :(cfg.max_job_family + 2)]  # first 5 column
         # self.job_state = np.delete(self.job_state, n, 0)
 
         """
@@ -167,7 +163,7 @@ class EnvPMSP(gym.Env):
 
         self.glb_state[:, :2 + cfg.max_job_family] = 0
         self.glb_state[self.m][:2 + cfg.max_job_family] = 1
-        # 从整行1 改成 只有 due date 1
+        # indicate the working machine
         # self.glb_state[self.m][1] = 1
 
         """arrive of new jobs"""
@@ -263,7 +259,7 @@ class EnvPMSP(gym.Env):
         self.state = np.hstack((self.job_state, self.mach_state))
 
         """
-        将所有机器的时间放入np数组，以便实现实时系统
+        put all machine time into array, to realize the real-time function
         """
         self.mach_time = np.zeros(len(self.machs))
         for i in range(len(self.machs)):
@@ -275,7 +271,7 @@ class EnvPMSP(gym.Env):
         """
         self.glb_state = np.zeros(cfg.num_all_machine * cfg.input_size).reshape(cfg.num_all_machine, cfg.input_size)
         for i in range(len(self.glb_state)):
-            # 后两列是machine种类
+            # last 2 column is the type of machine
             self.glb_state[i][-cfg.num_machine_family:] = one_hot(self.machs[i].mch_typ, cfg.num_machine_family)
         self.glb_state[self.m][:2+cfg.max_job_family] = 1
         # self.glb_state[self.m][1] = 1

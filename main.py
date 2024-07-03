@@ -92,7 +92,7 @@ for i in range(cfg.num_episode):
         observation = observation_
     score_history.append(score)
     tardiness_history.append(env.total_tardiness)
-    avg_score = np.mean(score_history[-100:])  # 平均分数
+    avg_score = np.mean(score_history[-100:])
     avg_tardiness = np.mean(tardiness_history[-100:])
 
     if avg_tardiness > best_tardiness:

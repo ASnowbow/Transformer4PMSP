@@ -12,10 +12,7 @@ import config
 
 from math import sqrt
 
-"""
-尝试使用Padding的方法解决变长序列的问题
-从而使多个state能放入一个batch进行跟新
-"""
+
 np.random.seed(1337)
 random.seed(1337)
 
@@ -28,30 +25,30 @@ def setup_seed(seed):
     random.seed(seed)
 
 
-# 设置随机数种子
+# set random seed
 setup_seed(1337)
 
 mach_mask = None
 
 class PPOMemory:
     def __init__(self, batch_size):
-        # 将用于更新的trajectory存放于列表中
+        # store trajectory in lists for update
         self.states = []
-        self.probs = []  # actor网络给出的action
-        self.vals = []  # 概率的log值
-        self.actions = []  # critic网络给出的v值
+        self.probs = []
+        self.vals = []
+        self.actions = []
         self.rewards = []
         self.dones = []
 
         self.batch_size = batch_size
 
     def generate_batches(self):
-        # 将记忆（ppo本身的更新频率，几步一更新）中trajectory的顺序打乱，生成一个batch
+        # shuffle the trajectory
         n_states = len(self.states)
-        batch_start = np.arange(0, n_states, self.batch_size)  # 每个batch的开头序号，从0开始，直到state的个数，步长为batch_size
-        indices = np.arange(n_states, dtype=np.int64)  # state的序号
-        np.random.shuffle(indices)  # 将state的序号打乱
-        batches = [indices[i: i + self.batch_size] for i in batch_start]  # 生成batch
+        batch_start = np.arange(0, n_states, self.batch_size)
+        indices = np.arange(n_states, dtype=np.int64)
+        np.random.shuffle(indices)
+        batches = [indices[i: i + self.batch_size] for i in batch_start]
 
         return np.array(self.states), \
                np.array(self.actions), \
@@ -143,11 +140,11 @@ class SelfAttention(nn.Module):
         self.scale_fkt = 1 / sqrt(embed_size)
 
     def forward(self, state_emb):
-        # 得到training example的数量
+        # get the number of trianing examples
         n = state_emb.shape[0]  # number of samples
         dim = state_emb.shape[1]  # dimension of q, k, v
 
-        queries = self.q_linear(state_emb)  # (sample数量, q维度, emb_size) 相当于立方体的 长. 高, 宽
+        queries = self.q_linear(state_emb)  # (sample numbers, q dim, emb_size)
         keys = self.k_linear(state_emb)
         values = self.v_linear(state_emb)
 
@@ -298,7 +295,7 @@ class Agent:
         self.gae_lambda = gae_lambda
         self.lr = alpha
 
-        # actor critic 实例化
+        # actor critic instantiation
         self.actor = ActorNetwork(input_size).to('cuda:0' if T.cuda.is_available() else 'cpu')
         self.critic = CriticNetwork(input_size).to('cuda:0' if T.cuda.is_available() else 'cpu')
         # self.emb = SharedNetwork(input_size, alpha).to('cuda:0' if T.cuda.is_available() else 'cpu')
@@ -309,7 +306,7 @@ class Agent:
         self.optimizer_actor = T.optim.Adam(self.actor.parameters(), lr=self.lr)
         self.optimizer_critic = T.optim.Adam(self.critic.parameters(), lr=self.lr)
 
-    def remember(self, state, action, probs, vals, reward, done):  # 用于Agent和它的记忆进行交流
+    def remember(self, state, action, probs, vals, reward, done):
         self.memory.store_memory(state, action, probs, vals, reward, done)
 
     def learning_rate_change(self):
@@ -336,14 +333,14 @@ class Agent:
         state = T.tensor(state_ary, dtype=T.float).to(self.actor.device)
         # state = self.emb(state)
 
-        dist = self.actor(state)  # 得到每个job的优先级
+        dist = self.actor(state)  # get the priority of each job
 
         value = self.critic(state)
 
-        # 选出动作
+        # choose action
         action = dist.sample()
-        probs = T.squeeze(dist.log_prob(action)).item()  # 得到对数概率
-        action = T.squeeze(action).item()  # item返回元素值
+        probs = T.squeeze(dist.log_prob(action)).item()
+        action = T.squeeze(action).item()  # get the value
         value = T.squeeze(value).item()
 
         return action, probs, value
@@ -357,10 +354,10 @@ class Agent:
             values = vals_arr
             advantage = np.zeros(len(reward_arr), dtype=np.float32)
 
-            # 计算discounted reward与advantage优势函数
+            # calculate discounted reward and advantage funciton
             for t in range(len(reward_arr) - 1):
-                discount = 0.98  # 递减系数
-                a_t = 0  # 优势函数
+                discount = 0.98  # gamma
+                a_t = 0  # advantage function
                 for k in range(t, len(reward_arr) - 1):
                     a_t += discount * (reward_arr[k] + self.gamma * values[k + 1] * (1 - int(dones_arr[k])) - values[k])
 
@@ -373,10 +370,7 @@ class Agent:
             values = T.tensor(values).to(self.actor.device)
 
             for batch in batches:
-                """
-                将长短不一的state输入
-                """
-                # 将np数组转化为张量
+                # convert np into tensor
                 action_batch = T.tensor(action_arr[batch]).to(self.actor.device)
                 old_prob_batch = T.tensor(old_prob_arr[batch]).to(self.actor.device)
                 state_batch = []
@@ -385,9 +379,6 @@ class Agent:
                 state_pad = pad_sequence(state_batch, batch_first=True).to(self.actor.device)
 
                 dist_batch = self.actor(state_pad)
-
-                # 此时dist_batch中包含了大小不一的概率分布（张量形式,cata形式）
-
 
                 new_probs_batch = dist_batch.log_prob(action_batch)
 
@@ -414,11 +405,6 @@ class Agent:
 
                 total_loss.backward()
                 # print(total_loss)
-                """for p in self.actor.parameters():
-                    print("actor的参数", p.grad.norm())
-                for p in self.critic.parameters():
-                    print("critic的参数", p.grad.norm())
-                """
                 # clip_grad_norm_(self.actor.parameters(), max_norm=1, norm_type=2)
                 # clip_grad_norm_(self.critic.parameters(), max_norm=1, norm_type=2)
                 # self.actor.optimizer.step()
