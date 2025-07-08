@@ -12,7 +12,6 @@ import config
 
 from math import sqrt
 
-
 np.random.seed(1337)
 random.seed(1337)
 
@@ -29,6 +28,7 @@ def setup_seed(seed):
 setup_seed(1337)
 
 mach_mask = None
+
 
 class PPOMemory:
     def __init__(self, batch_size):
@@ -51,12 +51,12 @@ class PPOMemory:
         batches = [indices[i: i + self.batch_size] for i in batch_start]
 
         return np.array(self.states), \
-               np.array(self.actions), \
-               np.array(self.probs), \
-               np.array(self.vals), \
-               np.array(self.rewards), \
-               np.array(self.dones), \
-               batches
+            np.array(self.actions), \
+            np.array(self.probs), \
+            np.array(self.vals), \
+            np.array(self.rewards), \
+            np.array(self.dones), \
+            batches
 
     def store_memory(self, state, action, probs, vals, reward, done):
         self.states.append(state)
@@ -214,7 +214,7 @@ class ActorNetwork(nn.Module):
         # mask
         mask = T.zeros(state.shape[1]).to(self.device)
         for i in range(config.num_all_machine):
-            mask[-1-i] = 1
+            mask[-1 - i] = 1
         mask = mask.to(T.bool)
         dist = dist.masked_fill(mask, float("-1e20"))
         dist = T.softmax(dist, dim=-1)
@@ -261,7 +261,6 @@ class CriticNetwork(nn.Module):
         self.attn_weights_2 = None
 
     def forward(self, state):
-
         # x = self.emb(state)
 
         x, self.attn_weights_1 = self.attention(state)
@@ -347,9 +346,8 @@ class Agent:
 
     def learn(self):
         for _ in range(self.n_epochs):
-            state_arr, action_arr, old_prob_arr, vals_arr, \
-            reward_arr, dones_arr, batches = \
-                self.memory.generate_batches()
+            state_arr, action_arr, old_prob_arr, vals_arr, reward_arr, dones_arr, batches \
+                = self.memory.generate_batches()
 
             values = vals_arr
             advantage = np.zeros(len(reward_arr), dtype=np.float32)
@@ -413,9 +411,3 @@ class Agent:
                 self.optimizer_critic.step()
 
         self.memory.clear_memory()
-
-
-
-
-
-

@@ -3,10 +3,10 @@ import gym
 from gym import spaces
 import numpy as np
 
-import config as config
+import config_val as config
 from Brain_Validation import Agent
 import timeit
-from config import experi_dir
+from config_val import experi_dir
 import random
 import pandas as pd
 
@@ -56,7 +56,6 @@ agent = Agent(batch_size=batch_size,
               alpha=alpha, n_epochs=n_epochs,
               input_size=config.Input_Size
               )
-
 
 """ new job arrival configuration """
 NUM_Batch = config.NUM_Batch
@@ -169,7 +168,7 @@ class Env_4_RNN(gym.Env):
         # the family of the job being processed by the machine m
         self.glb_state[self.m][-(MAX_Job_Type + config.NUM_Mach_Type):-config.NUM_Mach_Type] \
             = one_hot(machs[self.m].lst_job, MAX_Job_Type)
-        self.glb_state[self.m][2+MAX_Job_Type] = machs[self.m].acm_time / d_max
+        self.glb_state[self.m][2 + MAX_Job_Type] = machs[self.m].acm_time / d_max
 
         """
         reward
@@ -181,7 +180,7 @@ class Env_4_RNN(gym.Env):
             self.late_count += 1
             # reward += (self.job_choose[n].due_date - machs[self.m].acm_time)
         # elif (self.job_choose[n].due_date - machs[self.m].acm_time) < config.just_in_time_threshold:
-            # reward += config.just_in_time_reward
+        #     reward += config.just_in_time_reward
 
         """
         delete the chosen job from the state 
@@ -300,7 +299,7 @@ class Env_4_RNN(gym.Env):
         if config.global_info:
             for j in range(len(self.glb_state)):
                 self.glb_state[j][-NUM_Mach_Type:] = one_hot(machs[j].mch_typ, NUM_Mach_Type)
-        self.glb_state[self.m][:2+MAX_Job_Type] = 1
+        self.glb_state[self.m][:2 + MAX_Job_Type] = 1
 
         self.state = np.vstack((self.state, self.glb_state))
 
@@ -370,15 +369,14 @@ class MachLow(sim.Component):
 
 env = Env_4_RNN()
 
-MP = (N * 10 + (N + NUM_Job_Type) * 10 / 2)\
-       / (NUM_A_Mach + NUM_B_Mach)
+MP = (N * 10 + (N + NUM_Job_Type) * 10 / 2) / (NUM_A_Mach + NUM_B_Mach)
 d_min = (1 - r - R / 2) * MP + SETUP_Time
 d_max = (1 - r + R / 2) * MP + SETUP_Time
 
-jobs_0 = [Job(prc_time=config.init_job_data[i][0], due_date=config.init_job_data[i][1], label=int(config.init_job_data[i][2]))
-          for i in range(len(config.init_job_data))]
+jobs_0 = [
+    Job(prc_time=config.init_job_data[i][0], due_date=config.init_job_data[i][1], label=int(config.init_job_data[i][2]))
+    for i in range(len(config.init_job_data))]
 jobs = list(jobs_0)
-
 
 new_jobs = []
 for job_file in config.jobs_file_list:
@@ -386,11 +384,9 @@ for job_file in config.jobs_file_list:
     new_jobs.append([Job(prc_time=job_batch[i][0], due_date=job_batch[i][1], label=int(job_batch[i][2]))
                      for i in range(len(job_batch))])
 
-
 mach_A = [MachHigh(wait_line=sim.Queue("wait_line_A{}".format(i))) for i in range(config.num_fast_machine)]
 mach_B = [MachLow(wait_line=sim.Queue("wait_line_B{}".format(i))) for i in range(config.num_slow_machine)]
 machs = mach_A + mach_B
-
 
 experiment_dir = experi_dir()
 figs_dir = os.path.join(experiment_dir, 'figs')
@@ -456,5 +452,3 @@ glb_time_lst.append(min(time_list))
 print("time:", min(time_list))
 print("job number:", env.counts)
 print("")
-
-

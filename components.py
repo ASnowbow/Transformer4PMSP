@@ -29,7 +29,6 @@ class MachHigh(sim.Component):
         self.lst_job = lst_job
         self.mch_typ = mch_typ
 
-
     def process(self):
         while True:
             while len(self.wait_line) == 0:
@@ -50,7 +49,6 @@ class MachLow(sim.Component):
         self.num_jobs = num_jobs
         self.lst_job = lst_job
         self.mch_typ = mch_typ
-
 
     def process(self):
         while True:

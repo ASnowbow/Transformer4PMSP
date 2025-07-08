@@ -9,7 +9,6 @@ from components import jobs, new_jobs, machs
 
 import random
 
-
 np.random.seed(1337)
 random.seed(1337)
 sim.random.seed(1337)
@@ -174,11 +173,13 @@ class EnvPMSP(gym.Env):
         if self.machs[self.m].acm_time != 0:
             acm_time = np.array(self.machs[self.m].acm_time / cfg.d_max).reshape(1, 1)
             lst_job = np.array(one_hot(self.machs[self.m].lst_job, cfg.max_job_family)).reshape(1, cfg.max_job_family)
-            mach_type = np.array(one_hot(self.machs[self.m].mch_typ, cfg.num_machine_family)).reshape(1, cfg.num_machine_family)
+            mach_type = (np.array(one_hot(self.machs[self.m].mch_typ, cfg.num_machine_family))
+                         .reshape(1, cfg.num_machine_family))
         else:
             acm_time = np.zeros(1).reshape(1, 1)
             lst_job = np.zeros(cfg.max_job_family).reshape(1, cfg.max_job_family)
-            mach_type = np.array(one_hot(self.machs[self.m].mch_typ, cfg.num_machine_family)).reshape(1, cfg.num_machine_family)
+            mach_type = (np.array(one_hot(self.machs[self.m].mch_typ, cfg.num_machine_family))
+                         .reshape(1, cfg.num_machine_family))
 
         self.mach_state = np.hstack((acm_time, lst_job, mach_type))
         # self.mach_state = self.glb_state[self.m][-(1 + max_job_family + config.num_machine_family):]
@@ -248,7 +249,8 @@ class EnvPMSP(gym.Env):
         ltz_job = np.zeros(cfg.num_init_job * cfg.max_job_family).reshape(cfg.num_init_job, cfg.max_job_family)
 
         # then the vector of the type of the machine
-        mach_type = np.zeros(cfg.num_init_job * cfg.num_machine_family).reshape(cfg.num_init_job, cfg.num_machine_family)
+        mach_type = np.zeros(cfg.num_init_job * cfg.num_machine_family).reshape(cfg.num_init_job,
+                                                                                cfg.num_machine_family)
         for i in range(cfg.num_init_job):
             mach_type[i] = one_hot(self.machs[self.m].mch_typ, cfg.num_machine_family)
 
@@ -273,7 +275,7 @@ class EnvPMSP(gym.Env):
         for i in range(len(self.glb_state)):
             # last 2 column is the type of machine
             self.glb_state[i][-cfg.num_machine_family:] = one_hot(self.machs[i].mch_typ, cfg.num_machine_family)
-        self.glb_state[self.m][:2+cfg.max_job_family] = 1
+        self.glb_state[self.m][:2 + cfg.max_job_family] = 1
         # self.glb_state[self.m][1] = 1
 
         self.state = np.vstack((self.state, self.glb_state))

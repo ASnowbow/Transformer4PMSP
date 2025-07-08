@@ -6,12 +6,11 @@ import torch.optim as optim
 from torch.distributions.categorical import Categorical
 from torch.nn.utils.rnn import pad_sequence
 from torch.nn.utils import clip_grad_norm_
-from config import experi_dir
+from config_val import experi_dir
 import random
-import config
+import config_val as config
 
 from math import sqrt
-
 
 np.random.seed(1337)
 random.seed(1337)
@@ -23,13 +22,14 @@ def setup_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
 
+
 setup_seed(1337)
 
 mach_mask = None
 
+
 class PPOMemory:
     def __init__(self, batch_size):
-
         self.states = []
         self.probs = []
         self.vals = []
@@ -47,12 +47,12 @@ class PPOMemory:
         batches = [indices[i: i + self.batch_size] for i in batch_start]
 
         return np.array(self.states), \
-               np.array(self.actions), \
-               np.array(self.probs), \
-               np.array(self.vals), \
-               np.array(self.rewards), \
-               np.array(self.dones), \
-               batches
+            np.array(self.actions), \
+            np.array(self.probs), \
+            np.array(self.vals), \
+            np.array(self.rewards), \
+            np.array(self.dones), \
+            batches
 
     def store_memory(self, state, action, probs, vals, reward, done):
         self.states.append(state)
@@ -171,7 +171,8 @@ class SelfAttention(nn.Module):
 
 class ActorNetwork(nn.Module):
 
-    def __init__(self, input_size, dim_k=128, dim_v=128, num_heads=config.NUM_Head, chkpt_dir=os.path.join(experi_dir(), 'param')):
+    def __init__(self, input_size, dim_k=128, dim_v=128, num_heads=config.NUM_Head,
+                 chkpt_dir=os.path.join(experi_dir(), 'param')):
         super(ActorNetwork, self).__init__()
         self.checkpoint_file = os.path.join(chkpt_dir, 'actor_torch_ppo.pt')
 
@@ -191,8 +192,6 @@ class ActorNetwork(nn.Module):
         self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
         self.to(self.device)
 
-
-
     def forward(self, state):
         # x = self.emb(state)
         x = self.attention(state)
@@ -206,7 +205,7 @@ class ActorNetwork(nn.Module):
         # mask
         mask = T.zeros(state.shape[1]).to(self.device)
         for i in range(config.NUM_Machs):
-            mask[-1-i] = 1
+            mask[-1 - i] = 1
         mask = mask.to(T.bool)
         dist = dist.masked_fill(mask, float("-1e20"))
         dist = T.softmax(dist, dim=-1)
@@ -224,7 +223,8 @@ class ActorNetwork(nn.Module):
 
 
 class CriticNetwork(nn.Module):
-    def __init__(self, input_size, dim_k=128, dim_v=128, num_heads=config.NUM_Head, chkpt_dir=os.path.join(experi_dir(), 'param')):
+    def __init__(self, input_size, dim_k=128, dim_v=128, num_heads=config.NUM_Head,
+                 chkpt_dir=os.path.join(experi_dir(), 'param')):
         super(CriticNetwork, self).__init__()
 
         self.checkpoint_file = os.path.join(chkpt_dir, 'critic_torch_ppo.pt')
@@ -248,7 +248,6 @@ class CriticNetwork(nn.Module):
         self.to(self.device)
 
     def forward(self, state):
-
         # x = self.emb(state)
 
         x = self.attention(state)
@@ -332,9 +331,8 @@ class Agent:
 
     def learn(self):
         for _ in range(self.n_epochs):
-            state_arr, action_arr, old_prob_arr, vals_arr, \
-            reward_arr, dones_arr, batches = \
-                self.memory.generate_batches()
+            state_arr, action_arr, old_prob_arr, vals_arr, reward_arr, dones_arr, batches \
+                = self.memory.generate_batches()
 
             values = vals_arr
             advantage = np.zeros(len(reward_arr), dtype=np.float32)
@@ -393,9 +391,3 @@ class Agent:
                 self.optimizer_critic.step()
 
         self.memory.clear_memory()
-
-
-
-
-
-
