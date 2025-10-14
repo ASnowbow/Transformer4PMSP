@@ -128,13 +128,16 @@ Where:
 If you use this code in your research, please cite our paper:
 
 ```bibtex
-@article{li2024transformer,
-  title={A transformer-based deep reinforcement learning approach for dynamic parallel machine scheduling problem with family setups},
-  author={Li, Funing and Lang, Sebastian and Tian, Yuan and Hong, Bingyuan and Rolf, Benjamin and Noortwyck, Ruben and Schulz, Robert and Reggelin, Tobias},
-  journal={Journal of Intelligent Manufacturing},
-  pages={1--34},
-  year={2024},
-  publisher={Springer}
+@article{Li2025,
+  title = {A Transformer-Based Deep Reinforcement Learning Approach for Dynamic Parallel Machine Scheduling Problem with Family Setups},
+  author = {Li, Funing and Lang, Sebastian and Tian, Yuan and Hong, Bingyuan and Rolf, Benjamin and Noortwyck, Ruben and Schulz, Robert and Reggelin, Tobias},
+  year = {2025},
+  month = oct,
+  journal = {Journal of Intelligent Manufacturing},
+  volume = {36},
+  number = {7},
+  pages = {4735--4768},
+  doi = {10.1007/s10845-024-02470-8},
 }
 ```
 

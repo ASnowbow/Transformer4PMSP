@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Li"
+  given-names: "Funing"
+  orcid: "https://orcid.org/0000-0002-4455-6997"
+title: "Transformer4PMSP"
+version: 1.0.0
+doi: 10.1007/s10845-024-02470-8
+date-released: 2024
+url: "https://github.com/ASnowbow/Transformer4PMSP"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Li"
+    given-names: "Funing"
+    orcid: "https://orcid.org/0000-0002-4455-6997"
+  - family-names: "Lang"
+    given-names: "Sebastian"
+  - family-names: "Tian"
+    given-names: "Yuan"
+  - family-names: "Hong"
+    given-names: "Bingyuan"
+  - family-names: "Rolf"
+    given-names: "Benjamin"
+  - family-names: "Noortwyck"
+    given-names: "Ruben"
+  - family-names: "Schulz"
+    given-names: "Robert"
+  - family-names: "Reggelin"
+    given-names: "Tobias"
+  doi: 10.1007/s10845-024-02470-8
+  journal: "Journal of Intelligent Manufacturing"
+  month: 10
+  start: 4735 # First page number
+  end: 4768 # Last page number
+  title: "A transformer-based deep reinforcement learning approach for dynamic parallel machine scheduling problem with family setups"
+  issue: 7
+  volume: 36
+  year: 2025
